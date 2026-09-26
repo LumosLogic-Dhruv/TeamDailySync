@@ -6,6 +6,7 @@ import path from 'node:path'
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@tasksync/shared': path.resolve(__dirname, '../../shared/index.ts'),
