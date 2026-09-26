@@ -28,6 +28,7 @@ app.use(cors({
     'http://localhost:5173',
     'https://teamdailysync.web.app',
     'https://teamdailysync.firebaseapp.com',
+    'https://teamdailysync.onrender.com',
   ],
   credentials: true,
 }));

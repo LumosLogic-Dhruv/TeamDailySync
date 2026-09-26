@@ -6,7 +6,7 @@
     "rewrites": [
       {
         "source": "/api/**",
-        "destination": "https://tasksync-api.onrender.com/api/**"
+        "destination": "https://teamdailysync.onrender.com/api/**"
       },
       {
         "source": "**",
