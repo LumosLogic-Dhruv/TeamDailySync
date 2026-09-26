@@ -5,10 +5,6 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
-        "source": "/api/**",
-        "destination": "https://teamdailysync.onrender.com/api/**"
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }
