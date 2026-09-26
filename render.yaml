@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: tasksync-api
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: npm install && npm run build:server
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.1
+      - key: PORT
+        value: 8787
+      - key: CONVEX_URL
+        sync: false
+      - key: CONVEX_DEPLOYMENT
+        sync: false
