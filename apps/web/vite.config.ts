@@ -7,13 +7,13 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     dedupe: ['react', 'react-dom'],
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@tasksync/shared': path.resolve(__dirname, '../../shared/index.ts'),
-      '@tasksync/shared/utils': path.resolve(__dirname, '../../shared/utils'),
-      '@tasksync/shared/types': path.resolve(__dirname, '../../shared/types'),
-      '@tasksync/shared/constants': path.resolve(__dirname, '../../shared/constants'),
-    },
+    alias: [
+      { find: '@tasksync/shared/utils', replacement: path.resolve(__dirname, '../../shared/utils/ai-parse.ts') },
+      { find: '@tasksync/shared/types', replacement: path.resolve(__dirname, '../../shared/types/index.ts') },
+      { find: '@tasksync/shared/constants', replacement: path.resolve(__dirname, '../../shared/constants/index.ts') },
+      { find: '@tasksync/shared', replacement: path.resolve(__dirname, '../../shared/index.ts') },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+    ],
   },
   server: {
     watch: {
