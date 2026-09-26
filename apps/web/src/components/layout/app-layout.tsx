@@ -114,9 +114,7 @@ export function AppLayout() {
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r bg-sidebar/60 backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center gap-2.5 border-b px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-md shadow-primary/30">
-            <Sparkles className="h-4 w-4" />
-          </div>
+          <img src="/logo.png" alt="AI Daily Sync" className="h-8 w-8 rounded-lg object-contain" />
           <div className="leading-tight">
             <p className="text-sm font-semibold">AI Daily Sync</p>
             <p className="text-[11px] text-muted-foreground">EOD automation</p>
@@ -149,9 +147,7 @@ export function AppLayout() {
             >
               <div className="flex h-16 items-center justify-between border-b px-5">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
+                  <img src="/logo.png" alt="AI Daily Sync" className="h-8 w-8 rounded-lg object-contain" />
                   <p className="text-sm font-semibold">AI Daily Sync</p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
