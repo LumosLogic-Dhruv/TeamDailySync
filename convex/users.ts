@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { isAdminEmail } from "@tasksync/shared/constants";
 
 /**
  * Users — resolution of a login email to sheet tab / role / name.
@@ -26,6 +27,9 @@ export const resolveByGoogleEmail = mutation({
     if (!member) return null; // not on the roster → login rejected upstream
 
     const fallbackName = name?.trim() || member.name;
+    // Admin allowlist wins over the stored roster role so the /settings page
+    // stays restricted to the configured admins.
+    const role = isAdminEmail(normalized) ? ("admin" as const) : member.role ?? ("member" as const);
     const existing = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", normalized))
@@ -35,7 +39,7 @@ export const resolveByGoogleEmail = mutation({
     const fields = {
       email: normalized,
       name: fallbackName,
-      role: member.role ?? ("member" as const),
+      role,
       sheetTab: member.sheetTab,
       avatarUrl: avatarUrl ?? existing?.avatarUrl,
       lastLoginAt: now,

@@ -21,6 +21,16 @@ export const VALID_STATUSES = ['Done', 'In Progress', 'Blocked', 'Pending'] as c
 
 export const KNOWN_CLIENTS = ['Lumos Logic'] as const
 
+/**
+ * Admin allowlist — emails that get the admin role and can access /settings.
+ * Used by Convex (roster resolution) and the web app (route gating).
+ */
+export const ADMIN_EMAILS = ['dhruvshere.lumoslogic@gmail.com'] as const
+
+export function isAdminEmail(email: string | undefined | null): boolean {
+  return !!email && ADMIN_EMAILS.includes(email.toLowerCase().trim() as never)
+}
+
 export interface PromptContext {
   employeeName: string
   employeeEmail: string

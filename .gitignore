@@ -12,6 +12,11 @@ dist-ssr/
 .env.*
 !.env.example
 
+# Google Cloud credentials (OAuth client secrets, service account keys)
+client_secret_*.json
+*-beca8b038360*.json
+*.pem
+
 # Legacy runtime data (pre-Convex; no longer used)
 data/
 client/data/

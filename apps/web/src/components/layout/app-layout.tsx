@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useTheme } from '@/lib/theme'
+import { isAdminEmail } from '@tasksync/shared/constants'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -28,9 +29,11 @@ const NAV_ITEMS = [
 ]
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const { user } = useAuth()
+  const items = NAV_ITEMS.filter((item) => item.to !== '/settings' || isAdminEmail(user?.email))
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3">
-      {NAV_ITEMS.map((item) => (
+      {items.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}

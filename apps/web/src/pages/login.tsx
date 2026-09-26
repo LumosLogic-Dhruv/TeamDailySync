@@ -3,61 +3,80 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Sparkles, Clock, ArrowRight, ShieldCheck } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/use-toast'
 
-const GOOGLE_LOGO = (
-  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-    <path
-      fill="#4285F4"
-      d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.54 5.54 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82Z"
-    />
-    <path
-      fill="#34A853"
-      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24Z"
-    />
-    <path
-      fill="#FBBC05"
-      d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29a11.99 11.99 0 0 0 0 10.76l3.98-3.09Z"
-    />
-    <path
-      fill="#EA4335"
-      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42A11.97 11.97 0 0 0 12 0 11.99 11.99 0 0 0 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75Z"
-    />
-  </svg>
-)
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: object) => void
+          renderButton: (el: HTMLElement, config: object) => void
+          prompt: () => void
+        }
+      }
+    }
+  }
+}
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''
 
 export function LoginPage() {
   const { signIn, user } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = React.useState('')
-  const [name, setName] = React.useState('')
-  const [submitting, setSubmitting] = React.useState(false)
+  const btnRef = React.useRef<HTMLDivElement>(null)
   const [error, setError] = React.useState<string | null>(null)
+  const [loading, setLoading] = React.useState(false)
 
-  // Already signed in? Skip the login screen.
   if (user) return <Navigate to="/" replace />
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setError(null)
-    try {
-      await signIn(email.trim(), name.trim() || undefined)
-      toast({ title: 'Welcome back 👋', description: 'Signed in successfully.' })
-      navigate('/', { replace: true })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed')
-    } finally {
-      setSubmitting(false)
+  React.useEffect(() => {
+    const init = () => {
+      if (!window.google || !btnRef.current) return
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response: { credential: string }) => {
+          setLoading(true)
+          setError(null)
+          try {
+            // Decode JWT payload to get email + name + picture
+            const payload = JSON.parse(atob(response.credential.split('.')[1])) as {
+              email: string
+              name: string
+              picture: string
+            }
+            await signIn(payload.email, payload.name, payload.picture)
+            toast({ title: 'Welcome 👋', description: 'Signed in successfully.' })
+            navigate('/', { replace: true })
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Sign in failed')
+          } finally {
+            setLoading(false)
+          }
+        },
+      })
+      window.google.accounts.id.renderButton(btnRef.current, {
+        theme: 'outline',
+        size: 'large',
+        width: btnRef.current.offsetWidth || 360,
+        text: 'continue_with',
+        shape: 'rectangular',
+      })
     }
-  }
+
+    // Google script may already be loaded or still loading
+    if (window.google) {
+      init()
+    } else {
+      const interval = setInterval(() => {
+        if (window.google) { clearInterval(interval); init() }
+      }, 100)
+      return () => clearInterval(interval)
+    }
+  }, [])
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
-      {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0 bg-grid" />
       <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[36rem] -translate-x-1/2 rounded-full bg-primary/25 blur-[128px]" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-sky-500/15 blur-[100px]" />
@@ -78,27 +97,15 @@ export function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Work email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@lumoslogic.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="name">Display name (optional)</Label>
-            <Input
-              id="name"
-              placeholder="Dhruv"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+        <div className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              Signing in...
+            </div>
+          ) : (
+            <div ref={btnRef} className="w-full" />
+          )}
 
           {error && (
             <motion.p
@@ -109,26 +116,12 @@ export function LoginPage() {
               {error}
             </motion.p>
           )}
-
-          <Button type="submit" className="w-full" size="lg" disabled={submitting}>
-            {submitting ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Signing in...
-              </>
-            ) : (
-              <>
-                {GOOGLE_LOGO}
-                Continue with Google
-              </>
-            )}
-          </Button>
-        </form>
+        </div>
 
         <div className="mt-6 space-y-2 text-center text-xs text-muted-foreground">
           <p className="flex items-center justify-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Your email must be in the team mapping (Settings → User Mapping)
+            Only team members can sign in
           </p>
         </div>
 

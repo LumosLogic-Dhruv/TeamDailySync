@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { hydrateFromServer } from '@/lib/storage'
 import { ThemeProvider } from '@/lib/theme'
+import { isAdminEmail } from '@tasksync/shared/constants'
 import { Toaster } from '@/components/ui/toaster'
 import { LoginPage } from '@/pages/login'
 import { AppLayout } from '@/components/layout/app-layout'
@@ -38,6 +39,17 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+/**
+ * /settings is restricted to the admin allowlist (Dhruv). We check the shared
+ * allowlist in addition to the stored role so that existing logged-in sessions
+ * (saved before the role existed) are also gated correctly.
+ */
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  if (!user || !isAdminEmail(user.email)) return <Navigate to="/" replace />
+  return <>{children}</>
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -58,7 +70,7 @@ export default function App() {
                 <Route path="daily-entry" element={<DailyEntryPage />} />
                 <Route path="generated-report" element={<GeneratedReportPage />} />
                 <Route path="sheet-preview" element={<SheetPreviewPage />} />
-                <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings" element={<RequireAdmin><SettingsPage /></RequireAdmin>} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
