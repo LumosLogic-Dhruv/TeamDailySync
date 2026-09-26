@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+dist-server/
+dist-ssr/
+*.local
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Legacy runtime data (pre-Convex; no longer used)
+data/
+client/data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.sw?
+
+# Convex local
+.convex/

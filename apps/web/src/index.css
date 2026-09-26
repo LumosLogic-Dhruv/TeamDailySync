@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 69% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 10% 4%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem;
+    --sidebar: 240 5% 97%;
+    --sidebar-accent: 240 5% 93%;
+  }
+
+  .dark {
+    --background: 240 12% 6%;
+    --foreground: 0 0% 96%;
+    --card: 240 10% 9%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 262 90% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 8% 14%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 240 8% 14%;
+    --muted-foreground: 240 5% 62%;
+    --accent: 240 8% 16%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 72% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 240 10% 4%;
+    --border: 240 8% 17%;
+    --input: 240 8% 17%;
+    --ring: 262 90% 66%;
+    --sidebar: 240 12% 7%;
+    --sidebar-accent: 240 8% 14%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism */
+  .glass {
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  .glass-strong {
+    background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  .text-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(199 89% 48%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.55) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.55) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 35%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 35%, transparent 75%);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

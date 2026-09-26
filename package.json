@@ -1,0 +1,31 @@
+{
+  "name": "tasksync",
+  "version": "1.0.0",
+  "description": "TaskSync — AI Daily Sync: automated EOD reporting to Slack and Google Sheets",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,WEB\" -c \"blue,magenta\" \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:web": "npm run dev --workspace @tasksync/web",
+    "dev:server": "npm run dev --workspace @tasksync/server",
+    "convex:dev": "npx convex dev",
+    "convex:deploy": "npx convex deploy",
+    "build": "npm run build --workspace @tasksync/web && npm run build --workspace @tasksync/server",
+    "build:web": "npm run build --workspace @tasksync/web",
+    "build:server": "npm run build --workspace @tasksync/server",
+    "start": "npm run start --workspace @tasksync/server",
+    "typecheck": "npm run typecheck --workspace @tasksync/web && npm run typecheck --workspace @tasksync/server",
+    "lint": "npm run lint --workspace @tasksync/web",
+    "deploy": "npm run build:web && firebase deploy --only hosting:teamdailysync"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "convex": "^1.46.0"
+  }
+}

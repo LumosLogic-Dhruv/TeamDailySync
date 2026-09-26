@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "orvix-e3c9e"
+  },
+  "targets": {
+    "orvix-e3c9e": {
+      "hosting": {
+        "teamdailysync": ["teamdailysync"]
+      }
+    }
+  }
+}
