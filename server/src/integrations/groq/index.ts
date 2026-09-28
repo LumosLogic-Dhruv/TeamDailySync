@@ -1,7 +1,4 @@
-/**
- * Groq integration — OpenAI-compatible chat completions with the shared prompts.
- */
-import { buildSystemPrompt, buildUserPrompt } from "@tasksync/shared/constants";
+import { buildSystemPrompt, buildUserPrompt, buildMorningSystemPrompt, buildMorningUserPrompt } from "@tasksync/shared/constants";
 import { parseAiTasks } from "@tasksync/shared/utils/ai-parse";
 import type { PromptContext } from "@tasksync/shared/constants";
 import type { AiResult } from "../gemini/index.js";
@@ -11,7 +8,8 @@ function extractText(data: unknown): string {
   return d.choices?.[0]?.message?.content ?? ''
 }
 
-export async function callGroq(apiKey: string, ctx: PromptContext, signal?: AbortSignal): Promise<AiResult> {
+export async function callGroq(apiKey: string, ctx: PromptContext, signal?: AbortSignal, reportType?: string): Promise<AiResult> {
+  const isMorning = reportType === 'morning'
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -24,8 +22,8 @@ export async function callGroq(apiKey: string, ctx: PromptContext, signal?: Abor
       max_tokens: 4096,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: buildSystemPrompt() },
-        { role: 'user', content: buildUserPrompt(ctx) },
+        { role: 'system', content: isMorning ? buildMorningSystemPrompt() : buildSystemPrompt() },
+        { role: 'user', content: isMorning ? buildMorningUserPrompt(ctx) : buildUserPrompt(ctx) },
       ],
     }),
     signal,
@@ -41,18 +39,19 @@ export async function callGroq(apiKey: string, ctx: PromptContext, signal?: Abor
   return { ...parsed, provider: 'groq' }
 }
 
-/** Gemini primary, Groq fallback — identical behavior to the previous ai.ts. */
+/** Gemini primary, Groq fallback */
 export async function processWorkEntries(
   ctx: PromptContext,
   geminiKey?: string,
   groqKey?: string,
+  reportType?: string,
 ): Promise<AiResult> {
   const { callGemini } = await import('../gemini/index.js')
   const errors: string[] = []
 
   if (geminiKey) {
     try {
-      return await callGemini(geminiKey, ctx)
+      return await callGemini(geminiKey, ctx, undefined, reportType)
     } catch (err) {
       errors.push(`Gemini: ${err instanceof Error ? err.message : String(err)}`)
     }
@@ -60,7 +59,7 @@ export async function processWorkEntries(
 
   if (groqKey) {
     try {
-      return await callGroq(groqKey, ctx)
+      return await callGroq(groqKey, ctx, undefined, reportType)
     } catch (err) {
       errors.push(`Groq: ${err instanceof Error ? err.message : String(err)}`)
     }

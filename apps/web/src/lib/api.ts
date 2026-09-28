@@ -67,6 +67,7 @@ export const api = {
     date: string
     totalHours: number
     entries: WorkEntry[]
+    reportType?: 'eod' | 'morning'
   }) => request<AiProcessResponse>('/api/ai/process', { method: 'POST', body: JSON.stringify(payload) }),
 
   sheetsPreview: (tab: string) =>

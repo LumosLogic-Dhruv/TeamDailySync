@@ -29,12 +29,15 @@ export interface StructuredTask {
   blocker?: string
 }
 
+export type ReportType = 'eod' | 'morning'
+
 export interface GeneratedReport {
   employeeName: string
   employeeEmail: string
   date: string
   totalHours: number
   tasks: StructuredTask[]
+  reportType?: ReportType
 }
 
 export interface SlackEodPayload {

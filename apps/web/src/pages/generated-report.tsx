@@ -121,6 +121,7 @@ export function GeneratedReportPage() {
   const { toast } = useToast()
 
   const [report, setReport] = React.useState<GeneratedReport | null>(() => loadLastReport())
+  const isMorning = report?.reportType === 'morning'
   const [slackText, setSlackText] = React.useState('')
   const [editSlack, setEditSlack] = React.useState(false)
   const [busy, setBusy] = React.useState<'sheet' | 'slack' | 'both' | null>(null)
@@ -208,7 +209,7 @@ export function GeneratedReportPage() {
       await api.slackSend(report, editSlack ? slackText : undefined)
       const m = loadMetrics()
       saveMetrics({ ...m, slackSent: m.slackSent + 1 })
-      toast({ title: 'Slack EOD sent 🎉', description: 'Delivered to your team channel.' })
+      toast({ title: isMorning ? 'Morning Plan sent to Slack 🌅' : 'Slack EOD sent 🎉', description: 'Delivered to your team channel.' })
       return true
     } catch (err) {
       toast({
@@ -246,9 +247,9 @@ export function GeneratedReportPage() {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Generated Report</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{isMorning ? 'Morning Plan' : 'Generated Report'}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {report.date} · {report.totalHours} hr total · everything is editable before sending.
+            {report.date} · {isMorning ? `${report.totalHours} hr planned` : `${report.totalHours} hr total`} · everything is editable before sending.
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -422,7 +423,7 @@ export function GeneratedReportPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="h-4 w-4 text-primary" />
-                  Slack EOD Preview
+                  {isMorning ? 'Slack Morning Plan Preview' : 'Slack EOD Preview'}
                 </CardTitle>
                 <div className="flex items-center gap-1">
                   <Button
@@ -458,39 +459,38 @@ export function GeneratedReportPage() {
               />
 
               <div className="grid gap-2">
-                <Button onClick={handleDoBoth} disabled={busy !== null}>
-                  {busy === 'both' ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="h-4 w-4" />
-                  )}
-                  Do Both (Sheet + Slack)
-                </Button>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" onClick={handleUpdateSheet} disabled={busy !== null}>
-                    {busy === 'sheet' ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Table2 className="h-4 w-4" />
-                    )}
-                    Update Sheet
+                {isMorning ? (
+                  <Button onClick={handleSendSlack} disabled={busy !== null}>
+                    {busy === 'slack' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    Send Morning Plan to Slack
                   </Button>
-                  <Button variant="outline" onClick={handleSendSlack} disabled={busy !== null}>
-                    {busy === 'slack' ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                    Send Slack
-                  </Button>
-                </div>
+                ) : (
+                  <>
+                    <Button onClick={handleDoBoth} disabled={busy !== null}>
+                      {busy === 'both' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                      Do Both (Sheet + Slack)
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" onClick={handleUpdateSheet} disabled={busy !== null}>
+                        {busy === 'sheet' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Table2 className="h-4 w-4" />}
+                        Update Sheet
+                      </Button>
+                      <Button variant="outline" onClick={handleSendSlack} disabled={busy !== null}>
+                        {busy === 'slack' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        Send Slack
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <div className="flex items-start gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                Rows append to the <span className="mx-1 font-medium text-foreground">"{user?.tabName}"</span> tab.
-                Configure the sheet in Settings first.
-              </div>
+              {!isMorning && (
+                <div className="flex items-start gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  Rows append to the <span className="mx-1 font-medium text-foreground">"{user?.tabName}"</span> tab.
+                  Configure the sheet in Settings first.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

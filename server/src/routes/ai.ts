@@ -6,26 +6,21 @@ import { processWorkEntries } from "../integrations/groq/index.js";
 import { KNOWN_CLIENTS } from "@tasksync/shared/constants";
 import type { PromptContext } from "@tasksync/shared/constants";
 import type { AuthedRequest } from "../middleware/auth.js";
-import type { AiProcessResponse, WorkEntry } from "@tasksync/shared/types";
+import type { AiProcessResponse, WorkEntry, ReportType } from "@tasksync/shared/types";
 import { asyncHandler } from "../middleware/errors.js";
 
 export const aiRouter = Router();
 
-/**
- * POST /api/ai/process
- * Identical contract to the previous endpoint: raw entries in, structured
- * report + slack summary + provider out. New: the report is persisted to
- * Convex (audit trail) when the caller is a known user.
- */
 aiRouter.post(
   "/process",
   asyncHandler(async (req: AuthedRequest, res) => {
-    const { employeeName, employeeEmail, date, totalHours, entries } = req.body as {
+    const { employeeName, employeeEmail, date, totalHours, entries, reportType } = req.body as {
       employeeName?: string
       employeeEmail?: string
       date?: string
       totalHours?: number
       entries?: WorkEntry[]
+      reportType?: ReportType
     };
 
     if (!employeeName || !employeeEmail || !date || !entries?.length) {
@@ -43,7 +38,7 @@ aiRouter.post(
       knownClients: [...KNOWN_CLIENTS],
     };
 
-    const result = await processWorkEntries(ctx, secrets.geminiApiKey, secrets.groqApiKey);
+    const result = await processWorkEntries(ctx, secrets.geminiApiKey, secrets.groqApiKey, reportType);
 
     const report = {
       employeeName,
@@ -51,9 +46,9 @@ aiRouter.post(
       date,
       totalHours: Number(totalHours ?? 0),
       tasks: result.tasks,
+      reportType: reportType ?? 'eod' as ReportType,
     };
 
-    // Best-effort persistence; generation success should not fail on DB hiccups.
     if (req.user) {
       try {
         const userId = await findUserIdByEmail(req.user.email);

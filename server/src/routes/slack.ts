@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { buildEodMessage, sendSlackEod, sendSlackRawText } from "../integrations/slack/index.js";
+import { buildEodMessage, buildMorningMessage, sendSlackEod, sendSlackRawText } from "../integrations/slack/index.js";
 import { getRuntimeSecrets } from "../services/settingsService.js";
 import type { GeneratedReport } from "@tasksync/shared/types";
 import { asyncHandler } from "../middleware/errors.js";
@@ -15,12 +15,13 @@ slackRouter.post(
       res.status(400).json({ error: "report with tasks is required" });
       return;
     }
-    const { text, blocks } = buildEodMessage(report);
+    const isMorning = report.reportType === 'morning'
+    const { text, blocks } = isMorning ? buildMorningMessage(report) : buildEodMessage(report);
     res.json({ text, blocks });
   }),
 );
 
-/** POST /api/slack/send — deliver the EOD to the configured webhook. */
+/** POST /api/slack/send — deliver EOD or Morning Plan to the configured webhook. */
 slackRouter.post(
   "/send",
   asyncHandler(async (req, res) => {
@@ -36,8 +37,11 @@ slackRouter.post(
       return;
     }
     if (editedText) {
-      // User edited the message before sending: send plain text as-is.
       await sendSlackRawText(secrets.slackWebhookUrl, editedText);
+    } else if (report.reportType === 'morning') {
+      const { text, blocks } = buildMorningMessage(report);
+      await sendSlackRawText(secrets.slackWebhookUrl, text);
+      void blocks; // blocks available if needed later
     } else {
       await sendSlackEod({ webhookUrl: secrets.slackWebhookUrl }, report);
     }

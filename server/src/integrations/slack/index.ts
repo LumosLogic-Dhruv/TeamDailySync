@@ -83,7 +83,41 @@ export function buildEodMessage(report: GeneratedReport): { text: string; blocks
   return { text, blocks }
 }
 
-/** POST the EOD message to the configured Slack Incoming Webhook. */
+/** Build the Morning Plan Slack message as Block Kit blocks + plain-text fallback. */
+export function buildMorningMessage(report: GeneratedReport): { text: string; blocks: SlackBlock[] } {
+  const blocks: SlackBlock[] = [
+    {
+      type: 'header',
+      text: { type: 'plain_text', text: `🌅 Morning Plan`, emoji: true },
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `*${report.employeeName}* — ${report.date}`,
+      },
+    },
+  ]
+
+  const plainLines: string[] = [`🌅 Morning Plan`, '', `${report.employeeName} — ${report.date}`]
+
+  for (const task of report.tasks) {
+    const title = `${task.project} ⏳ ${task.estimatedTime}`
+    blocks.push({ type: 'divider' })
+    blocks.push({ type: 'section', text: { type: 'mrkdwn', text: `*${title}*` } })
+    plainLines.push('', title)
+    const details = Array.isArray(task.taskDetails) ? task.taskDetails : [String(task.taskDetails)]
+    const bullets = details.map((d) => `- ${d}`)
+    if (bullets.length > 0) {
+      blocks.push({ type: 'section', text: { type: 'mrkdwn', text: bullets.join('\n') } })
+      plainLines.push(...bullets)
+    }
+  }
+
+  return { text: plainLines.join('\n'), blocks }
+}
+
+
 export async function sendSlackEod(config: SlackConfig, report: GeneratedReport): Promise<void> {
   const { text, blocks } = buildEodMessage(report)
 

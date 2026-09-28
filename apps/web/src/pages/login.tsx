@@ -88,7 +88,7 @@ export function LoginPage() {
         className="glass-strong relative z-10 w-full max-w-md rounded-2xl p-8 shadow-2xl"
       >
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden shadow-lg shadow-primary/30">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center">
             <img src="/logo.png" alt="AI Daily Sync" className="h-full w-full object-contain" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">AI Daily Sync</h1>

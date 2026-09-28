@@ -1,7 +1,7 @@
 /**
  * Gemini integration — REST call to generateContent with the shared prompts.
  */
-import { buildSystemPrompt, buildUserPrompt } from "@tasksync/shared/constants";
+import { buildSystemPrompt, buildUserPrompt, buildMorningSystemPrompt, buildMorningUserPrompt } from "@tasksync/shared/constants";
 import { parseAiTasks } from "@tasksync/shared/utils/ai-parse";
 import type { PromptContext } from "@tasksync/shared/constants";
 import type { AiProvider } from "@tasksync/shared/types";
@@ -23,15 +23,16 @@ function extractText(data: unknown): string {
   )
 }
 
-export async function callGemini(apiKey: string, ctx: PromptContext, signal?: AbortSignal): Promise<AiResult> {
+export async function callGemini(apiKey: string, ctx: PromptContext, signal?: AbortSignal, reportType?: string): Promise<AiResult> {
+  const isMorning = reportType === 'morning'
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: buildSystemPrompt() }] },
-        contents: [{ role: 'user', parts: [{ text: buildUserPrompt(ctx) }] }],
+        system_instruction: { parts: [{ text: isMorning ? buildMorningSystemPrompt() : buildSystemPrompt() }] },
+        contents: [{ role: 'user', parts: [{ text: isMorning ? buildMorningUserPrompt(ctx) : buildUserPrompt(ctx) }] }],
         generationConfig: {
           temperature: 0.3,
           maxOutputTokens: 4096,
