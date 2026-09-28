@@ -9,10 +9,22 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
+function getStoredEmail(): string | undefined {
+  try {
+    const raw = localStorage.getItem('ai-daily-sync-user')
+    return raw ? (JSON.parse(raw) as { email?: string }).email : undefined
+  } catch { return undefined }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const email = getStoredEmail()
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(email ? { 'x-tasksync-email': email } : {}),
+      ...(init?.headers ?? {}),
+    },
   })
   if (!res.ok) {
     let message = `Request failed (${res.status})`
